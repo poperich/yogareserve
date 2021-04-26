@@ -18,10 +18,11 @@ def loginYoga(session, user, password):
               'Input.Password': password,
               'Input.Remember': 'true',
               '__RequestVerificationToken': token }
-  sleep(randint(1,10))
+  sleep(randint(1,60))
   p = session.post(url, data=payload)
   soup = BeautifulSoup(p.text, 'html.parser')
-  logging.debug(soup.title)
+  #logging.debug(soup.title)
+  logging.debug(soup.prettify())
 
 def getYogaActivity(session):
   '''
@@ -57,7 +58,8 @@ def reserve_yoga_class(session,cod_classe):
   p = session.post(url, data=payload)
   soup = BeautifulSoup(p.text, 'html.parser')
   logging.debug(soup.prettify())
-  if p.status_code == 406:
+  logging.debug("recived status code: %d",p.status_code)
+  if p.status_code == 200:
     return True
   else:
     logging.error("unable to reserve the class respose from server: %s", p.text)
@@ -108,9 +110,11 @@ if __name__ == "__main__":
   level_config = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO}
 
   if cfg["log"]["file"] is "" :
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=level_config[cfg["log"]["level"]])
+    logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S', level=level_config[cfg["log"]["level"]])
   else:
-    logging.basicConfig(filename=cfg["log"]["file"], format='%(levelname)s:%(message)s', level=level_config[cfg["log"]["level"]])
+    logging.basicConfig(filename=cfg["log"]["file"], format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S', level=level_config[cfg["log"]["level"]])
 
   USER = cfg["access"]["user"]
   PASSWORD = cfg["access"]["password"]
@@ -132,6 +136,8 @@ if __name__ == "__main__":
     
     reserve = False
     yogaclass = getYogaActivity(s)
+    loggin.debug("found the following class:")
+    logging.debug(yogaclass)
     for yoga in yogaclass:
       if yoga["data"] == day_to_reserve.strftime("%y%m%d") and yoga["ora"] == YOGA_HOUR_CLASS:
         logging.debug("try to reserve class %s on day: %s ora: %s", yoga["tipo"], yoga["data"], yoga["ora"])
@@ -139,6 +145,6 @@ if __name__ == "__main__":
         if reserved:
           logging.info("reserverd class date: %s hour: %s", yoga["data"], yoga["ora"])
     if not reserved:
-      logging.critical("Should reserve a class but some error occurred")
+      logging.debug("Should reserve a class but some error occurred")
   else:
     logging.debug("No class to reserve")

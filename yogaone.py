@@ -130,6 +130,10 @@ if __name__ == "__main__":
 
   if cfg["telegram"]["enabled"]:
     bt = telegram.botTelegram(cfg["telegram"]["bot_id"], cfg["telegram"]["chat_id"])
+    logging.debug(bt.telegram_bot_sendtext(
+      bot_message="Staring reserving for day of the week: {}, at time: {}".format(
+        str(YOGA_WEEK_DAY),
+        YOGA_HOUR_CLASS)))
 
   logging.debug("Starting session with following credential usr: %s, psw: %s", USER, PASSWORD)
   logging.info("Staring reserving for day of the week: %s, at time: %s", str(YOGA_WEEK_DAY), YOGA_HOUR_CLASS)
@@ -169,7 +173,7 @@ if __name__ == "__main__":
         reserved = reserve_yoga_class(s,yoga["cod_classe"])
         if reserved:
           logging.info("reserverd class date: %s hour: %s", yoga["data"], yoga["ora"])
-          logging.debug(bt.telegram_bot_sendtext(bot_message="reserverd class date: %s hour: %s", yoga["data"], yoga["ora"]))
+          logging.debug(bt.telegram_bot_sendtext(bot_message="reserverd class date: {} hour: {}".format(yoga["data"], yoga["ora"])))
 
     if not reserved:
       logging.debug("Should reserve a class but some error occurred")

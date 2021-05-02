@@ -21,8 +21,8 @@ def loginYoga(session, user, password):
   sleep(randint(1,60))
   p = session.post(url, data=payload)
   soup = BeautifulSoup(p.text, 'html.parser')
-  #logging.debug(soup.title)
-  logging.debug(soup.prettify())
+  logging.debug(soup.title)
+  #logging.debug(soup.prettify())
 
 def getYogaActivity(session):
   '''
@@ -30,7 +30,7 @@ def getYogaActivity(session):
   '''
   sleep(randint(1,10))
   activity = s.get(BASEURL)
-  print(activity)
+  logging.debug(activity)
   soup = BeautifulSoup(activity.text, 'html.parser')
   classesActive = soup.find_all("tr", {"class": "active"})
   #print(classesActive)
@@ -57,7 +57,7 @@ def reserve_yoga_class(session,cod_classe):
 
   p = session.post(url, data=payload)
   soup = BeautifulSoup(p.text, 'html.parser')
-  logging.debug(soup.prettify())
+  #logging.debug(soup.prettify())
   logging.debug("recived status code: %d",p.status_code)
   if p.status_code == 200:
     return True
@@ -67,8 +67,8 @@ def reserve_yoga_class(session,cod_classe):
 def get_my_reserve(session):
   myreserve = s.get(BASEURL+"/Account/MyAccount")
   soup = BeautifulSoup(myreserve.text, 'html.parser')
-  print(soup.prettify())
-  print(activity)
+  logging.debug(soup.prettify())
+  logging.debug(activity)
 
   reserve_table = soup.find_all("div", {"id": "proximascitaslist"})
   #print(classesActive)
@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
   level_config = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO}
 
-  if cfg["log"]["file"] is "" :
+  if cfg["log"]["file"] == "" :
     logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S', level=level_config[cfg["log"]["level"]])
   else:
@@ -124,6 +124,21 @@ if __name__ == "__main__":
   logging.debug("Starting session with following credential usr: %s, psw: %s", USER, PASSWORD)
   logging.info("Staring reserving for day of the week: %s, at time: %s", str(YOGA_WEEK_DAY), YOGA_HOUR_CLASS)
 
+  if cfg["test"]["test"]:
+
+    s = requests.Session()
+    
+    # login
+    loginYoga(session=s, user=USER, password=PASSWORD)
+    
+    reserve = False
+    yogaclass = getYogaActivity(s)
+    logging.debug("found the following class:")
+    logging.debug(yogaclass)
+    reserved = reserve_yoga_class(s, "38-SDIR1-YOGA-191-210430")
+    logging.debug(reserved)
+    exit()
+
   # weekday()
   day_to_reserve = datetime.datetime.today() + datetime.timedelta(days=2) 
 
@@ -136,7 +151,7 @@ if __name__ == "__main__":
     
     reserve = False
     yogaclass = getYogaActivity(s)
-    loggin.debug("found the following class:")
+    logging.debug("found the following class:")
     logging.debug(yogaclass)
     for yoga in yogaclass:
       if yoga["data"] == day_to_reserve.strftime("%y%m%d") and yoga["ora"] == YOGA_HOUR_CLASS:

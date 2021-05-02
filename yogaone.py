@@ -2,6 +2,9 @@ import requests
 import logging
 import datetime
 import yaml
+import os
+
+from telegram import telegram
 
 from bs4 import BeautifulSoup
 from random import randint
@@ -103,13 +106,17 @@ def selectClass(yogaclass):
 
 if __name__ == "__main__":
 
-
-  with open("config.yml", "r") as ymlfile:
+  if os.path.isfile('private_config.yml'):
+    with open("private_config.yml", "r") as ymlfile:
+        cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+  else:
+    with open("config.yml", "r") as ymlfile:
       cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+
 
   level_config = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO}
 
-  if cfg["log"]["file"] is "" :
+  if cfg["log"]["file"] == "" :
     logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S', level=level_config[cfg["log"]["level"]])
   else:
@@ -120,6 +127,9 @@ if __name__ == "__main__":
   PASSWORD = cfg["access"]["password"]
   YOGA_WEEK_DAY = cfg["schedule"]["day"]
   YOGA_HOUR_CLASS = cfg["schedule"]["hour"]
+
+  if cfg["telegram"]["enabled"]:
+    bt = telegram.botTelegram(cfg["telegram"]["bot_id"], cfg["telegram"]["chat_id"])
 
   logging.debug("Starting session with following credential usr: %s, psw: %s", USER, PASSWORD)
   logging.info("Staring reserving for day of the week: %s, at time: %s", str(YOGA_WEEK_DAY), YOGA_HOUR_CLASS)
@@ -144,6 +154,8 @@ if __name__ == "__main__":
         reserved = reserve_yoga_class(s,yoga["cod_classe"])
         if reserved:
           logging.info("reserverd class date: %s hour: %s", yoga["data"], yoga["ora"])
+          logging.debug(bt.telegram_bot_sendtext(bot_message="reserverd class date: %s hour: %s", yoga["data"], yoga["ora"]))
+
     if not reserved:
       logging.debug("Should reserve a class but some error occurred")
   else:

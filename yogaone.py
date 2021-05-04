@@ -21,7 +21,7 @@ def loginYoga(session, user, password):
               'Input.Password': password,
               'Input.Remember': 'true',
               '__RequestVerificationToken': token }
-  sleep(randint(1,60))
+  sleep(randint(1,10))
   p = session.post(url, data=payload)
   soup = BeautifulSoup(p.text, 'html.parser')
   logging.debug(soup.title)
@@ -169,10 +169,15 @@ if __name__ == "__main__":
     logging.debug(yogaclass)
     for yoga in yogaclass:
       if yoga["data"] == day_to_reserve.strftime("%y%m%d") and yoga["ora"] == YOGA_HOUR_CLASS:
+        if yoga["posti"] == '0':
+          logging.info("zero posti per la classe il giorno: %s hour: %s", yoga["data"], yoga["ora"])
+          logging.debug(bt.telegram_bot_sendtext(bot_message="zero posti per la classe il giorno: {} hour: {}".format(yoga["data"], yoga["ora"])))
+          exit()
+
         logging.debug("try to reserve class %s on day: %s ora: %s", yoga["tipo"], yoga["data"], yoga["ora"])
         reserved = reserve_yoga_class(s,yoga["cod_classe"])
         if reserved:
-          logging.info("reserverd class date: %s hour: %s", yoga["data"], yoga["ora"])
+          logging.info("reserved class date: %s hour: %s", yoga["data"], yoga["ora"])
           logging.debug(bt.telegram_bot_sendtext(bot_message="reserverd class date: {} hour: {}".format(yoga["data"], yoga["ora"])))
 
     if not reserved:

@@ -1,0 +1,15 @@
+log:
+  level: DEBUG
+  file: "/home/ubuntu/yogareserve.log"
+access:
+  user: "youremail@prova.com"
+  password: ""
+schedule:
+  day: [0,1,3,4] # Day of the week 0 Mon,6 Sun
+  hour: "19:45"
+telegram:
+  bot_id: ""
+  chat_id: ""
+  enabled: False
+test:
+  test: False
